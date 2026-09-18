@@ -1,6 +1,5 @@
 
-# Download 7 log.gz files from
-# https://sjsu.instructure.com/courses/1625907/files/folder/Resources/data
+# Download 7 log.gz files in the same folder
 from pyspark.sql import SparkSession
 import pyspark.sql.functions as F
 
