@@ -91,12 +91,14 @@ for candidate in candidates:
 
         # Log the full sklearn Pipeline (vectorizer + classifier together).
         # This ensures the same preprocessing is always applied at inference time.
-        signature = infer_signature(X_train, candidate["pipeline"].predict(X_train))
+        # signature tells MLflow what inputs the model expects and what outputs it produces.ㅍ
+        # signature = infer_signature(X_train, candidate["pipeline"].predict(X_train))
         mlflow.sklearn.log_model(
             sk_model=candidate["pipeline"],
             name="model",
             registered_model_name="imdb-sentiment",
-            signature=signature,
+            # signature=signature,
+            serialization_format="cloudpickle"
         )
 
         run_results.append({
@@ -111,13 +113,19 @@ for candidate in candidates:
 best = max(run_results, key=lambda x: x["f1_score"])
 print(f"\nBest model: {best['run_name']} (F1={best['f1_score']:.4f})")
 
+# Create an MLflow client to interact with the Model Registry
 client = MlflowClient()
 
+# Get all registered versions of the "imdb-sentiment" model
+# Each version is associated with the MLflow run that created it
 versions = client.search_model_versions("name='imdb-sentiment'")
-best_version = next(
-    v.version for v in versions
-    if v.run_id == best["run_id"]
-)
 
+# 'best' was already selected earlier based on the highest F1 score.
+# Find the registered model version whose run_id matches the best run.
+best_version = next(v.version for v in versions if v.run_id == best["run_id"])
+
+# Assign the "champion" alias to the best model version.
+# "champion" is a user-defined alias, not a special MLflow keyword.
+# If the alias already exists, it will be moved to this version.
 client.set_registered_model_alias("imdb-sentiment", "champion", version=best_version)
-print(f"Alias 'champion' → version {best_version} ({best['run_name']})")
+print(f"Alias 'champion' ➔ version {best_version} ({best['run_name']})")
