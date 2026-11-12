@@ -25,7 +25,7 @@ with DAG(
     default_args=default_args,
     description='Build a Medium Posting Search Engine using Pinecone',
     schedule_interval=timedelta(days=7),
-    start_date=datetime(2025, 4, 1),
+    start_date=datetime(2026, 11, 1),
     catchup=False,
     tags=['medium', 'pinecone', 'search-engine'],
 ) as dag:
